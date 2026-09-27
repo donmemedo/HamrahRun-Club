@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      DEMO_OTP: "1"  # set to 0 once an SMS gateway sends real codes
+    ports:
+      - "8017:8000"
+    volumes:
+      - db:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8000
+    ports:
+      - "3017:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db:
