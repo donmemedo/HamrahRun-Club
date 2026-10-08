@@ -1,7 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BadgeCheck, Check, Gauge, MapPin, Settings2 } from "lucide-react";
+import { BadgeCheck, Check, Gauge, Loader2, MapPin, Settings2 } from "lucide-react";
 import { useApp } from "@/components/ui";
+import { api, ApiError } from "@/lib/api";
 import type { L10n } from "@/lib/i18n";
 
 export type CarT = { id: number; model: L10n; year: number; km: number; price: number; city: L10n; score: number; gearbox: string; color: string };
@@ -22,8 +24,23 @@ function CarArt({ color }: { color: string }) {
 }
 
 export function CarCard({ car }: { car: CarT }) {
-  const { d, pick, num, lang } = useApp();
-  const [requested, setRequested] = useState(false);
+  const { d, pick, num, lang, authed, setAuthed, err } = useApp();
+  const router = useRouter();
+  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  const [error, setError] = useState("");
+  const toLogin = () => router.push(`/login?next=${encodeURIComponent(location.pathname)}`);
+  const request = async () => {
+    if (!authed) return toLogin();
+    setState("busy"); setError("");
+    try {
+      await api(`/cars/${car.id}/visit`, {});
+      setState("done");
+    } catch (e) {
+      setState("idle");
+      if (e instanceof ApiError && e.status === 401) { setAuthed(false); return toLogin(); }
+      setError(err(e));
+    }
+  };
   const year = lang === "fa" ? num(car.year).replace(/٬/g, "") : String(car.year + 621);
   return (
     <article className="surface group flex h-full flex-col overflow-hidden rounded-[28px]">
@@ -54,11 +71,13 @@ export function CarCard({ car }: { car: CarT }) {
         </div>
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <div className="text-lg font-extrabold">{num(car.price)} <span className="text-xs font-normal text-fg-2">{d.toman}</span></div>
-          <button onClick={() => setRequested(true)} disabled={requested}
-            className="flex h-10 items-center gap-1.5 rounded-full bg-accent/12 px-4 text-sm font-semibold text-accent transition hover:bg-accent hover:text-white active:scale-95 disabled:bg-green/15 disabled:text-green">
-            {requested && <Check className="size-4" />}{requested ? d.market.requested : d.market.visit}
+          <button onClick={request} disabled={state !== "idle"} aria-live="polite"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-accent/12 px-4 text-sm font-semibold text-accent transition hover:bg-accent hover:text-white active:scale-95 disabled:bg-green/15 disabled:text-green">
+            {state === "busy" ? <Loader2 className="size-4 animate-spin" /> : state === "done" && <Check className="size-4" />}
+            {state === "done" ? d.market.requested : d.market.visit}
           </button>
         </div>
+        {error && <p role="alert" className="mt-2 text-xs text-pink">{error}</p>}
       </div>
     </article>
   );
