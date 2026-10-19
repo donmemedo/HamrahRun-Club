@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --test lib/safe-next.test.ts"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5",
     "@fontsource-variable/vazirmatn": "^5",
     "lucide-react": "^1.47.0",
     "motion": "^13.4.1",
-    "next": "^16.3.6",
+    "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

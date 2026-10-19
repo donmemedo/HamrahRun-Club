@@ -2,8 +2,15 @@ node_modules/
 .next/
 .venv/
 __pycache__/
+.pytest_cache/
 backend/data/
+backend/*.db
+backend/*.db-wal
+backend/*.db-shm
 *.log
-
+*.whl
 Docs
 .idea
+*.tsbuildinfo
+graphify-out/.graphify_*
+graphify-out/cache/

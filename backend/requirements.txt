@@ -1,1 +1,4 @@
-fastapi[standard]>=0.115
+# Pinned direct dependencies. fastapi[standard] pulled in sentry-sdk, typer, rich, jinja2 and a cloud CLI the API never uses.
+fastapi==0.141.1
+pydantic==2.13.5
+uvicorn[standard]==0.53.0
